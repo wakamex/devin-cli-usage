@@ -1,0 +1,24 @@
+[project]
+name = "devin-usage"
+version = "0.1.0"
+description = "Devin account usage and quota monitor"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+
+[tool.uv]
+package = true
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/devin_usage"]
+
+[project.urls]
+Homepage = "https://github.com/wakamex/devin-usage"
+Source = "https://github.com/wakamex/devin-usage"
+
+[project.scripts]
+devin-usage = "devin_usage:main"
