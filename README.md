@@ -1,4 +1,4 @@
-# devin-usage
+# devin-cli-usage
 
 Devin account usage and quota monitor. It follows the same dependency-free
 interface as the other `/code/*usage` tools.
@@ -6,7 +6,7 @@ interface as the other `/code/*usage` tools.
 ## Install
 
 ```bash
-uv tool install devin-usage
+uv tool install devin-cli-usage
 ```
 
 For local development:
@@ -19,13 +19,13 @@ uv tool install .
 
 | Command | Description |
 | --- | --- |
-| `devin-usage` | Show current account usage |
-| `devin-usage status` | Same as above |
-| `devin-usage json` | Print normalized JSON |
-| `devin-usage statusline` | Print compact cached output |
-| `devin-usage refresh` | Refresh the cache and print status |
-| `devin-usage daemon [-i SECS]` | Keep the cache fresh |
-| `devin-usage install` | Print installation instructions |
+| `devin-cli-usage` | Show current account usage |
+| `devin-cli-usage status` | Same as above |
+| `devin-cli-usage json` | Print normalized JSON |
+| `devin-cli-usage statusline` | Print compact cached output |
+| `devin-cli-usage refresh` | Refresh the cache and print status |
+| `devin-cli-usage daemon [-i SECS]` | Keep the cache fresh |
+| `devin-cli-usage install` | Print installation instructions |
 
 ## Authentication and data
 

@@ -141,7 +141,7 @@ def fetch_usage() -> dict:
         headers={
             "Content-Type": "application/json",
             "Connect-Protocol-Version": "1",
-            "User-Agent": "devin-usage/0.1",
+            "User-Agent": "devin-cli-usage/0.1",
         },
     )
     try:
@@ -367,7 +367,7 @@ def cmd_daemon(args: argparse.Namespace) -> None:
     signal.signal(signal.SIGINT, lambda *_: sys.exit(0))
     if hasattr(signal, "SIGTERM"):
         signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
-    print(f"devin-usage daemon started (refreshing every {args.interval}s)")
+    print(f"devin-cli-usage daemon started (refreshing every {args.interval}s)")
     print(f"Writing to {get_usage_file()}")
     while True:
         data = build_usage_json()
@@ -378,7 +378,9 @@ def cmd_daemon(args: argparse.Namespace) -> None:
 
 
 def cmd_install(_args: argparse.Namespace) -> None:
-    print("Install with:\n  uv tool install devin-usage\n\nThen run:\n  devin-usage")
+    print(
+        "Install with:\n  uv tool install devin-cli-usage\n\nThen run:\n  devin-cli-usage"
+    )
 
 
 def _build_parser() -> argparse.ArgumentParser:

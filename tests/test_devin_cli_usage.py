@@ -7,7 +7,7 @@ import urllib.error
 from pathlib import Path
 from unittest import mock
 
-import devin_usage
+import devin_cli_usage as devin_usage
 
 
 class FakeResponse:
