@@ -1,7 +1,7 @@
 [project]
 name = "devin-cli-usage"
 version = "0.1.0"
-description = "Devin account usage and quota monitor"
+description = "Devin CLI account quota monitor using local Devin authentication"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = []
