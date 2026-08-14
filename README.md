@@ -50,10 +50,10 @@ uv tool install .
 ## Authentication and data
 
 The tool reads `windsurf_api_key` and `api_server_url` from Devin's local
-`~/.local/share/devin/credentials.toml`, then calls the read-only
-`GetUserStatus` service used by the installed client. It rereads credentials
-for every live request. It never refreshes credentials or modifies
-Devin-owned files.
+`~/.local/share/devin/credentials.toml`, or the corresponding path below
+`XDG_DATA_HOME` when it is set, then calls the read-only `GetUserStatus`
+service used by the installed client. It rereads credentials for every live
+request. It never refreshes credentials or modifies Devin-owned files.
 
 The normalized JSON includes:
 
@@ -68,8 +68,9 @@ vendor sentinel for an unlimited or non-credit-based allowance and is
 preserved verbatim.
 
 The tool writes only its own non-secret cache at
-`~/.local/share/devin/usage-limits.json`. JSON results report whether they are
-`live`, `cached`, `stale`, or `unavailable`.
+`~/.local/share/devin/usage-limits.json`, also following `XDG_DATA_HOME` when
+set. JSON results report whether they are `live`, `cached`, `stale`, or
+`unavailable`.
 
 Environment overrides:
 

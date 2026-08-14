@@ -25,6 +25,23 @@ class FakeResponse:
 
 
 class DevinUsageTests(unittest.TestCase):
+    def test_default_files_follow_xdg_data_home(self):
+        with (
+            tempfile.TemporaryDirectory() as temporary,
+            mock.patch.dict(
+                devin_usage.os.environ,
+                {"XDG_DATA_HOME": temporary},
+                clear=True,
+            ),
+        ):
+            data_dir = Path(temporary) / "devin"
+            self.assertEqual(
+                devin_usage.get_credentials_file(), data_dir / "credentials.toml"
+            )
+            self.assertEqual(
+                devin_usage.get_usage_file(), data_dir / "usage-limits.json"
+            )
+
     def test_credentials_are_reread_without_writes(self):
         with tempfile.TemporaryDirectory() as temporary:
             credentials = Path(temporary) / "credentials.toml"

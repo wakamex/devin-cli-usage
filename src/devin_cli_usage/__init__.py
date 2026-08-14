@@ -75,12 +75,26 @@ def _format_reset(value: object) -> str:
 
 def get_credentials_file() -> Path:
     override = os.environ.get("DEVIN_USAGE_CREDENTIALS_FILE")
-    return Path(override).expanduser() if override else DEFAULT_CREDENTIALS_FILE
+    if override:
+        return Path(override).expanduser()
+    data_home = os.environ.get("XDG_DATA_HOME")
+    return (
+        Path(data_home).expanduser() / "devin" / "credentials.toml"
+        if data_home
+        else DEFAULT_CREDENTIALS_FILE
+    )
 
 
 def get_usage_file() -> Path:
     override = os.environ.get("DEVIN_USAGE_FILE")
-    return Path(override).expanduser() if override else DEFAULT_USAGE_FILE
+    if override:
+        return Path(override).expanduser()
+    data_home = os.environ.get("XDG_DATA_HOME")
+    return (
+        Path(data_home).expanduser() / "devin" / "usage-limits.json"
+        if data_home
+        else DEFAULT_USAGE_FILE
+    )
 
 
 def get_credentials() -> tuple[str, str]:
