@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import re
 import shutil
@@ -46,15 +47,29 @@ def _parse_iso(value: object) -> datetime | None:
 def _number(value: object) -> int | float | None:
     if isinstance(value, bool):
         return None
-    if isinstance(value, int | float):
+    if isinstance(value, int):
         return value
+    if isinstance(value, float):
+        return value if math.isfinite(value) else None
     if isinstance(value, str):
         try:
             parsed = float(value)
         except ValueError:
             return None
+        if not math.isfinite(parsed):
+            return None
         return int(parsed) if parsed.is_integer() else parsed
     return None
+
+
+def _optional_number(data: dict, key: str) -> int | float | None:
+    raw = data.get(key)
+    if raw is None:
+        return None
+    value = _number(raw)
+    if value is None:
+        raise RuntimeError(f"Devin user-status response contained invalid {key}")
+    return value
 
 
 def _format_reset(value: object) -> str:
@@ -182,17 +197,22 @@ def _normalized_plan_info(payload: dict, plan_status: dict) -> dict:
         info = plan_status.get("planInfo")
     if not isinstance(info, dict):
         info = {}
-    return {
+    normalized = {
         key: value
         for key, source in (
             ("name", "planName"),
             ("billing_strategy", "billingStrategy"),
-            ("monthly_prompt_credits", "monthlyPromptCredits"),
-            ("monthly_flow_credits", "monthlyFlowCredits"),
-            ("monthly_flex_credits", "monthlyFlexCreditPurchaseAmount"),
         )
         if (value := info.get(source)) is not None
     }
+    for key, source in (
+        ("monthly_prompt_credits", "monthlyPromptCredits"),
+        ("monthly_flow_credits", "monthlyFlowCredits"),
+        ("monthly_flex_credits", "monthlyFlexCreditPurchaseAmount"),
+    ):
+        if (value := _optional_number(info, source)) is not None:
+            normalized[key] = value
+    return normalized
 
 
 def _normalize(payload: dict) -> dict:
@@ -201,15 +221,19 @@ def _normalize(payload: dict) -> dict:
         raise RuntimeError("Devin user-status response did not contain userStatus")
     plan_status = user_status.get("planStatus")
     if not isinstance(plan_status, dict):
-        plan_status = {}
+        raise RuntimeError("Devin user-status response did not contain planStatus")
     quotas = {
         "daily": {
-            "remaining_pct": _number(plan_status.get("dailyQuotaRemainingPercent")),
-            "reset_at": _number(plan_status.get("dailyQuotaResetAtUnix")),
+            "remaining_pct": _optional_number(
+                plan_status, "dailyQuotaRemainingPercent"
+            ),
+            "reset_at": _optional_number(plan_status, "dailyQuotaResetAtUnix"),
         },
         "weekly": {
-            "remaining_pct": _number(plan_status.get("weeklyQuotaRemainingPercent")),
-            "reset_at": _number(plan_status.get("weeklyQuotaResetAtUnix")),
+            "remaining_pct": _optional_number(
+                plan_status, "weeklyQuotaRemainingPercent"
+            ),
+            "reset_at": _optional_number(plan_status, "weeklyQuotaResetAtUnix"),
         },
     }
     credits = {
@@ -225,8 +249,12 @@ def _normalize(payload: dict) -> dict:
             ("acu_consumed", "acuConsumed"),
             ("acu_limit", "acuLimit"),
         )
-        if (value := _number(plan_status.get(source))) is not None
+        if (value := _optional_number(plan_status, source)) is not None
     }
+    if not credits and not any(
+        quota["remaining_pct"] is not None for quota in quotas.values()
+    ):
+        raise RuntimeError("Devin user-status response did not contain usage data")
     return {
         "plan": _normalized_plan_info(payload, plan_status),
         "plan_period": {

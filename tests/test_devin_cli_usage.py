@@ -105,6 +105,39 @@ class DevinUsageTests(unittest.TestCase):
         self.assertEqual(data["quotas"]["weekly"]["remaining_pct"], 50)
         self.assertEqual(data["credits"]["available_prompt"], 900)
 
+    def test_incomplete_plan_status_is_unavailable(self):
+        for plan_status in (None, [], {}):
+            with self.subTest(plan_status=plan_status):
+                payload = {"userStatus": {"planStatus": plan_status}}
+                with mock.patch.object(
+                    devin_usage, "fetch_usage", return_value=payload
+                ):
+                    data = devin_usage.build_usage_json()
+                self.assertEqual(data["status"], "unavailable")
+
+    def test_nonfinite_usage_is_unavailable(self):
+        payloads = (
+            {
+                "userStatus": {
+                    "planStatus": {"dailyQuotaRemainingPercent": float("inf")}
+                }
+            },
+            {
+                "planInfo": {"monthlyPromptCredits": "NaN"},
+                "userStatus": {
+                    "planStatus": {"dailyQuotaRemainingPercent": 75}
+                },
+            },
+        )
+        for payload in payloads:
+            with self.subTest(payload=payload):
+                with mock.patch.object(
+                    devin_usage, "fetch_usage", return_value=payload
+                ):
+                    data = devin_usage.build_usage_json()
+                self.assertEqual(data["status"], "unavailable")
+                json.dumps(data, allow_nan=False)
+
     def test_non_https_server_is_rejected(self):
         with tempfile.TemporaryDirectory() as temporary:
             credentials = Path(temporary) / "credentials.toml"
